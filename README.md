@@ -1,8 +1,7 @@
-# Robocode - pierwszy robot
+# Robocode - AdaptiveBot
 
-Ten projekt zawiera dwa roboty dla klasycznego Robocode:
+Ten projekt zawiera robota dla klasycznego Robocode:
 
-- `org.example.MyBot` - bardzo prosty robot do pierwszego uruchomienia.
 - `mybots.AdaptiveBot` - robot sledzacy cel radarem, celujacy niezaleznie
   od ruchu i zmieniajacy kierunek uniku po otrzymaniu trafienia.
 
@@ -22,7 +21,7 @@ Aktualne wydanie klasycznego Robocode:
 ## Pierwsza walka w GUI
 
 1. Pobierz i uruchom instalator Robocode `1.10.1`.
-2. W IntelliJ wybierz `Build > Build Project`, aby skompilowac roboty.
+2. W IntelliJ wybierz `Build > Build Project`, aby skompilowac robota.
 3. Uruchom Robocode i wejdz w `Options > Preferences > Development Options`.
 4. Dodaj katalog klas projektu, zazwyczaj:
    `E:\JB_Projects\Robocode\target\classes`
@@ -31,17 +30,16 @@ Aktualne wydanie klasycznego Robocode:
    robotow `sample`, np. `sample.SpinBot`, i rozpocznij walke.
 
 Po zmianie kodu ponownie zbuduj projekt i uruchom nowa bitwe. Najlatwiej
-eksperymentowac ze stalymi w `AdaptiveBot`, np. `MOVE_DISTANCE`, sila strzalu
-oraz kat jazdy wzgledem przeciwnika.
+eksperymentowac ze stala `MOVE_DISTANCE`, doborem sily strzalu oraz katem
+jazdy wzgledem przeciwnika w `src/main/java/mybots/AdaptiveBot.java`.
 
-W tym katalogu roboczym silnik jest juz zainstalowany lokalnie w
-`target\robocode-home`, a skompilowane klasy sa w jego katalogu `robots`.
 Gotowa konfiguracja starcia znajduje sie w
 `battles\adaptive-vs-spinbot.battle`.
 Gwiazdka przy `mybots.AdaptiveBot*` w tym pliku oznacza lokalna wersje
 deweloperska robota.
 
-Uruchomienie tej gotowej walki z terminala PowerShell:
+Jesli Robocode jest zainstalowany lokalnie w `target\robocode-home`,
+uruchomienie tej gotowej walki z terminala PowerShell wyglada tak:
 
 ```powershell
 & 'C:\Users\Piotr\.jdks\temurin-25.0.3\bin\java.exe' `
