@@ -35,33 +35,66 @@ public class AdaptiveBot extends AdvancedRobot {
 
         loadQTable();
 
+        setTurnRadarRightRadians(Double.POSITIVE_INFINITY);
+
         while (true) {
-            setTurnRadarRightRadians(Double.POSITIVE_INFINITY);
+            if (getRadarTurnRemaining() == 0) {
+                setTurnRadarRightRadians(Double.POSITIVE_INFINITY);
+            }
             execute();
         }
     }
 
     @Override
     public void onScannedRobot(ScannedRobotEvent event) {
-        int sDist = getDistanceState(event.getDistance());
-        int sBear = getBearingState(event.getBearing());
-        int sWall = getWallState();
-        int sLat = getLateralVelocityState(event);
+        double absoluteBearing = getHeadingRadians() + event.getBearingRadians();
 
-        double maxQ = getMaxQ(sDist, sBear, sWall, sLat);
-        qTable[lastStateDist][lastStateBear][lastStateWall][lastStateLat][lastAction] +=
-                ALPHA * (currentReward + GAMMA * maxQ - qTable[lastStateDist][lastStateBear][lastStateWall][lastStateLat][lastAction]);
+        setTurnRadarRightRadians(Utils.normalRelativeAngle(absoluteBearing - getRadarHeadingRadians()) * 2);
 
-        int action = chooseAction(sDist, sBear, sWall, sLat);
+        double firePower = event.getDistance() < 200 ? 3.0 : event.getDistance() < 400 ? 2.0 : 1.0;
+        double bulletSpeed = 20 - 3 * firePower;
+        double lateralVelocity = event.getVelocity() * Math.sin(event.getHeadingRadians() - absoluteBearing);
+        double predictedAngle = absoluteBearing + Math.asin(Math.max(-1, Math.min(1, lateralVelocity / bulletSpeed)));
 
-        executeAction(action, event);
+        setTurnGunRightRadians(Utils.normalRelativeAngle(predictedAngle - getGunHeadingRadians()));
 
-        lastStateDist = sDist;
-        lastStateBear = sBear;
-        lastStateWall = sWall;
-        lastStateLat = sLat;
-        lastAction = action;
-        currentReward = 0;
+        if (getGunHeat() == 0) {
+            setFire(firePower);
+        }
+
+        if (Math.abs(getDistanceRemaining()) < 20 && Math.abs(getTurnRemaining()) < 10) {
+            int sDist = getDistanceState(event.getDistance());
+            int sBear = getBearingState(event.getBearing());
+            int sWall = getWallState();
+            int sLat = getLateralVelocityState(event);
+
+            double maxQ = getMaxQ(sDist, sBear, sWall, sLat);
+            qTable[lastStateDist][lastStateBear][lastStateWall][lastStateLat][lastAction] +=
+                    ALPHA * (currentReward + GAMMA * maxQ - qTable[lastStateDist][lastStateBear][lastStateWall][lastStateLat][lastAction]);
+
+            int action = chooseAction(sDist, sBear, sWall, sLat);
+
+            double moveAngle;
+            if (action == 0) {
+                moveAngle = absoluteBearing - Math.PI / 2;
+            } else if (action == 1) {
+                moveAngle = absoluteBearing + Math.PI / 2;
+            } else if (action == 2) {
+                moveAngle = absoluteBearing + Math.PI;
+            } else {
+                moveAngle = absoluteBearing;
+            }
+
+            setTurnRightRadians(Utils.normalRelativeAngle(moveAngle - getHeadingRadians()));
+            setAhead(150);
+
+            lastStateDist = sDist;
+            lastStateBear = sBear;
+            lastStateWall = sWall;
+            lastStateLat = sLat;
+            lastAction = action;
+            currentReward = 0;
+        }
     }
 
     private int getLateralVelocityState(ScannedRobotEvent event) {
@@ -90,6 +123,8 @@ public class AdaptiveBot extends AdvancedRobot {
     @Override
     public void onHitWall(HitWallEvent event) {
         currentReward -= 10;
+        setAhead(0);
+        setTurnRight(0);
     }
 
     @Override
@@ -165,31 +200,6 @@ public class AdaptiveBot extends AdvancedRobot {
             }
         }
         return bestAction;
-    }
-
-    private void executeAction(int action, ScannedRobotEvent event) {
-        double absoluteBearing = getHeadingRadians() + event.getBearingRadians();
-
-        setTurnRadarRightRadians(
-                Utils.normalRelativeAngle(absoluteBearing - getRadarHeadingRadians()) * 2);
-        setTurnGunRightRadians(
-                Utils.normalRelativeAngle(absoluteBearing - getGunHeadingRadians()));
-
-        if (getGunHeat() == 0) {
-            setFire(2);
-        }
-
-        if (action == 0) {
-            setAhead(100);
-        } else if (action == 1) {
-            setBack(100);
-        } else if (action == 2) {
-            setTurnRight(45);
-            setAhead(100);
-        } else if (action == 3) {
-            setTurnLeft(45);
-            setAhead(100);
-        }
     }
 
     private void saveQTable() {
