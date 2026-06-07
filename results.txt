@@ -1,4 +1,4 @@
 Results for 5000 rounds
 Robot Name	    Total Score    	Survival	Surv Bonus	Bullet Dmg	Bullet Bonus	Ram Dmg * 2	Ram Bonus	 1sts 	 2nds 	 3rds 	
-1st: mybots.AdaptiveBot*	812909 (84%)	249200	49840	425024	84733	3568	544	4984	16	0	
-2nd: mybots.TrainingOpponent*	158591 (16%)	800	160	152546	306	4780	0	16	4984	0	
+1st: mybots.AdaptiveBot*	891962 (73%)	236700	47340	505113	96183	5786	839	4737	263	0	
+2nd: mybots.TrainingOpponent*	334606 (27%)	13150	2630	307875	5565	5262	124	266	4734	0	

@@ -19,12 +19,15 @@ public class AdaptiveBot extends AdvancedRobot {
     private int lastStateLat = 0;
     private int lastAction = 0;
     private double currentReward = 0;
+    private double episodeReward = 0;
 
     private static double epsilon = 0.3;
     private static int totalEpisodes = 0;
 
     @Override
     public void run() {
+        episodeReward = 0;
+
         setBodyColor(new Color(30, 46, 70));
         setGunColor(new Color(22, 163, 174));
         setRadarColor(new Color(246, 173, 85));
@@ -108,21 +111,25 @@ public class AdaptiveBot extends AdvancedRobot {
     @Override
     public void onHitByBullet(HitByBulletEvent event) {
         currentReward -= 15;
+        episodeReward -= 15;
     }
 
     @Override
     public void onBulletHit(BulletHitEvent event) {
         currentReward += 30;
+        episodeReward += 30;
     }
 
     @Override
     public void onBulletMissed(BulletMissedEvent event) {
         currentReward -= 2;
+        episodeReward -= 2;
     }
 
     @Override
     public void onHitWall(HitWallEvent event) {
         currentReward -= 10;
+        episodeReward -= 10;
         setAhead(0);
         setTurnRight(0);
     }
@@ -130,18 +137,22 @@ public class AdaptiveBot extends AdvancedRobot {
     @Override
     public void onDeath(DeathEvent event) {
         currentReward -= 100;
+        episodeReward -= 100;
         updateFinalState();
         totalEpisodes++;
         epsilon = Math.max(0.05, 0.3 * Math.exp(-0.001 * totalEpisodes));
+        logProgress();
         saveQTable();
     }
 
     @Override
     public void onWin(WinEvent event) {
         currentReward += 100;
+        episodeReward += 100;
         updateFinalState();
         totalEpisodes++;
         epsilon = Math.max(0.05, 0.3 * Math.exp(-0.001 * totalEpisodes));
+        logProgress();
         saveQTable();
     }
 
@@ -226,6 +237,17 @@ public class AdaptiveBot extends AdvancedRobot {
                 ois.close();
             }
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void logProgress() {
+        try {
+            RobocodeFileOutputStream rfos = new RobocodeFileOutputStream(getDataFile("history.csv").getAbsolutePath(), true);
+            PrintStream out = new PrintStream(rfos);
+            out.println(totalEpisodes + "," + episodeReward);
+            out.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
